@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">课堂智能笔记助手</string>
+    <string name="home_title">课堂智能笔记助手</string>
+    <string name="home_subtitle">先跑通拍照、笔记保存和重新读取</string>
+    <string name="course_label">当前课程</string>
+    <string name="course_hint">输入课程名称</string>
+    <string name="default_course">数据结构</string>
+    <string name="capture_button">拍摄板书</string>
+    <string name="sample_button">测试：生成示例板书</string>
+    <string name="mock_notice">本轮使用模拟整理结果。下一步会把模拟数据替换成真实 AI 请求。</string>
+    <string name="recent_notes">最近笔记</string>
+    <string name="note_count">%1$d 条</string>
+    <string name="empty_notes">还没有笔记。点击“拍摄板书”或“生成示例板书”开始。</string>
+    <string name="mock_badge">模拟结果</string>
+    <string name="note_meta">%1$d 个知识点 · %2$d 个待复习问题</string>
+    <string name="processing_mock">正在生成模拟整理结果…</string>
+    <string name="note_saved">模拟笔记已保存，重启应用后仍可读取</string>
+    <string name="camera_unavailable">没有找到可用的相机应用</string>
+    <string name="capture_cancelled">已取消拍照</string>
+    <string name="capture_failed">照片没有保存成功，请重试</string>
+    <string name="camera_permission_hint">系统相机需要临时写入缓存图片，应用已经通过安全文件接口授权。</string>
+    <string name="back">← 返回</string>
+    <string name="source_photo">原始板书</string>
+    <string name="summary_title">模拟整理结果</string>
+    <string name="key_points">知识点</string>
+    <string name="questions">待复习问题</string>
+    <string name="detail_mock_notice">当前内容来自第一条功能链的模拟数据。下一步将接入真实 AI 服务并校验 JSON。</string>
+    <string name="note_missing">找不到这条笔记</string>
+    <string name="note_date">%1$s</string>
+    <string name="photo_content_description">保存的板书照片</string>
+</resources>
+
