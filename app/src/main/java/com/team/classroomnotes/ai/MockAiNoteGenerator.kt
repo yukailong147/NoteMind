@@ -7,6 +7,7 @@ import java.io.IOException
 
 class MockAiNoteGenerator : AiNoteGenerator {
     private val mainHandler = Handler(Looper.getMainLooper())
+    private var simulatedFailureConsumed = false
 
     override fun generate(
         courseName: String,
@@ -14,7 +15,8 @@ class MockAiNoteGenerator : AiNoteGenerator {
         callback: (Result<GeneratedNote>) -> Unit
     ) {
         mainHandler.postDelayed({
-            if (courseName.contains("模拟失败")) {
+            if (courseName.contains("模拟失败") && !simulatedFailureConsumed) {
+                simulatedFailureConsumed = true
                 callback(
                     Result.failure(
                         IOException("这是用于测试重试流程的模拟网络错误")
