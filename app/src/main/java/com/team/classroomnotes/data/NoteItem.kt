@@ -7,8 +7,25 @@ data class NoteItem(
     val summary: String,
     val keyPoints: List<String>,
     val questions: List<String>,
+    val keywords: List<String>,
+    val uncertain: List<String>,
     val imagePath: String,
     val createdAt: Long,
-    val isMock: Boolean
+    val isMock: Boolean,
+    val status: NoteStatus,
+    val errorMessage: String
 )
+
+enum class NoteStatus {
+    DRAFT,
+    PROCESSING,
+    SUCCESS,
+    FAILED;
+
+    companion object {
+        fun fromStorage(value: String?): NoteStatus {
+            return entries.firstOrNull { it.name == value } ?: SUCCESS
+        }
+    }
+}
 

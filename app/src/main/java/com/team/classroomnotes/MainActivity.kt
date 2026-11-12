@@ -8,8 +8,6 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
@@ -22,6 +20,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.team.classroomnotes.data.NoteItem
 import com.team.classroomnotes.data.NoteStore
+import com.team.classroomnotes.data.NoteStatus
+import com.team.classroomnotes.ui.bindStatus
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -116,7 +116,10 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        saveMockNote(persistentPhoto, pendingCourseName.ifBlank { currentCourseName() })
+        createDraftAndOpen(
+            persistentPhoto,
+            pendingCourseName.ifBlank { currentCourseName() }
+        )
     }
 
     private fun createSampleCapture() {
@@ -149,43 +152,36 @@ class MainActivity : AppCompatActivity() {
         }
         bitmap.recycle()
 
-        saveMockNote(photoFile, currentCourseName())
+        createDraftAndOpen(photoFile, currentCourseName())
     }
 
-    private fun saveMockNote(photoFile: File, courseName: String) {
-        captureButton.isEnabled = false
-        sampleButton.isEnabled = false
-        showMessage(getString(R.string.processing_mock))
+    private fun createDraftAndOpen(photoFile: File, courseName: String) {
+        val note = NoteItem(
+            id = UUID.randomUUID().toString(),
+            courseName = courseName,
+            title = getString(R.string.draft_title),
+            summary = "",
+            keyPoints = emptyList(),
+            questions = emptyList(),
+            keywords = emptyList(),
+            uncertain = emptyList(),
+            imagePath = photoFile.absolutePath,
+            createdAt = System.currentTimeMillis(),
+            isMock = false,
+            status = NoteStatus.DRAFT,
+            errorMessage = ""
+        )
 
-        Handler(Looper.getMainLooper()).postDelayed({
-            val now = System.currentTimeMillis()
-            val title = "第 ${store.loadAll().size + 1} 次课堂记录"
-            val note = NoteItem(
-                id = UUID.randomUUID().toString(),
-                courseName = courseName,
-                title = title,
-                summary = "板书照片已经成功保存。本版使用固定模拟数据验证笔记创建、本地保存和重新读取流程。",
-                keyPoints = listOf(
-                    "中序遍历的访问顺序是左子树、根节点、右子树",
-                    "递归处理子树时要明确终止条件",
-                    "原始板书照片会随笔记一起保存在手机本地"
-                ),
-                questions = listOf(
-                    "如果左子树为空，下一步应该访问哪个节点？",
-                    "如何用代码表示二叉树的终止条件？"
-                ),
-                imagePath = photoFile.absolutePath,
-                createdAt = now,
-                isMock = true
+        store.add(note)
+        renderNotes()
+        Toast.makeText(this, R.string.note_saved, Toast.LENGTH_SHORT).show()
+        startActivity(
+            NoteDetailActivity.createIntent(
+                context = this,
+                noteId = note.id,
+                autoGenerate = true
             )
-
-            store.add(note)
-            captureButton.isEnabled = true
-            sampleButton.isEnabled = true
-            statusText.text = getString(R.string.note_saved)
-            Toast.makeText(this, R.string.note_saved, Toast.LENGTH_SHORT).show()
-            renderNotes()
-        }, 700)
+        )
     }
 
     private fun copyPhotoToAppStorage(source: File): File? = runCatching {
@@ -216,15 +212,22 @@ class MainActivity : AppCompatActivity() {
             val itemView = inflater.inflate(R.layout.item_note, notesContainer, false)
             itemView.findViewById<TextView>(R.id.noteCourseText).text = note.courseName
             itemView.findViewById<TextView>(R.id.noteTitleText).text = note.title
-            itemView.findViewById<TextView>(R.id.noteMetaText).text = getString(
-                R.string.note_meta,
-                note.keyPoints.size,
-                note.questions.size
-            )
+            itemView.findViewById<TextView>(R.id.noteMetaText).text =
+                if (note.status == NoteStatus.SUCCESS) {
+                    getString(
+                        R.string.note_meta,
+                        note.keyPoints.size,
+                        note.questions.size
+                    )
+                } else {
+                    getString(R.string.status_draft)
+                }
             itemView.findViewById<TextView>(R.id.noteDateText).text =
                 formatDate(note.createdAt)
-            itemView.findViewById<TextView>(R.id.mockBadgeText).visibility =
-                if (note.isMock) View.VISIBLE else View.GONE
+            itemView.findViewById<TextView>(R.id.statusBadgeText).apply {
+                visibility = View.VISIBLE
+                bindStatus(note.status, note.isMock)
+            }
             itemView.setOnClickListener {
                 startActivity(
                     NoteDetailActivity.createIntent(this, note.id)

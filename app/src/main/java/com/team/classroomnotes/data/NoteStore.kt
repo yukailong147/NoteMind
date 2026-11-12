@@ -26,10 +26,23 @@ class NoteStore(context: Context) {
 
     @Synchronized
     fun add(note: NoteItem): List<NoteItem> {
-        val notes = loadAll().toMutableList()
+        val notes = loadAll().filterNot { it.id == note.id }.toMutableList()
         notes.add(0, note)
         writeAll(notes)
         return notes
+    }
+
+    @Synchronized
+    fun update(note: NoteItem): NoteItem {
+        val notes = loadAll().toMutableList()
+        val index = notes.indexOfFirst { it.id == note.id }
+        if (index >= 0) {
+            notes[index] = note
+        } else {
+            notes.add(0, note)
+        }
+        writeAll(notes)
+        return note
     }
 
     @Synchronized
@@ -49,9 +62,13 @@ class NoteStore(context: Context) {
         put("summary", summary)
         put("keyPoints", keyPoints.toJsonArray())
         put("questions", questions.toJsonArray())
+        put("keywords", keywords.toJsonArray())
+        put("uncertain", uncertain.toJsonArray())
         put("imagePath", imagePath)
         put("createdAt", createdAt)
         put("isMock", isMock)
+        put("status", status.name)
+        put("errorMessage", errorMessage)
     }
 
     private fun JSONObject.toNoteItem(): NoteItem = NoteItem(
@@ -61,9 +78,13 @@ class NoteStore(context: Context) {
         summary = getString("summary"),
         keyPoints = getJSONArray("keyPoints").toStringList(),
         questions = getJSONArray("questions").toStringList(),
+        keywords = optJSONArray("keywords")?.toStringList() ?: emptyList(),
+        uncertain = optJSONArray("uncertain")?.toStringList() ?: emptyList(),
         imagePath = getString("imagePath"),
         createdAt = getLong("createdAt"),
-        isMock = optBoolean("isMock", false)
+        isMock = optBoolean("isMock", false),
+        status = NoteStatus.fromStorage(optString("status").takeIf { it.isNotBlank() }),
+        errorMessage = optString("errorMessage", "")
     )
 
     private fun List<String>.toJsonArray(): JSONArray = JSONArray().also { array ->

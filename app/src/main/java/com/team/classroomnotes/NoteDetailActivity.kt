@@ -6,51 +6,207 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.team.classroomnotes.ai.AiNoteGenerator
+import com.team.classroomnotes.ai.AiNoteGeneratorFactory
+import com.team.classroomnotes.ai.GeneratedNote
 import com.team.classroomnotes.data.NoteItem
+import com.team.classroomnotes.data.NoteStatus
 import com.team.classroomnotes.data.NoteStore
+import com.team.classroomnotes.ui.bindStatus
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class NoteDetailActivity : AppCompatActivity() {
+    private lateinit var store: NoteStore
+    private lateinit var generator: AiNoteGenerator
+    private lateinit var note: NoteItem
+    private var isGenerating = false
+
+    private lateinit var statusText: TextView
+    private lateinit var errorText: TextView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var generateButton: Button
+    private lateinit var imageView: ImageView
+    private lateinit var summaryTitle: TextView
+    private lateinit var summaryText: TextView
+    private lateinit var keyPointsTitle: TextView
+    private lateinit var keyPointsContainer: LinearLayout
+    private lateinit var questionsTitle: TextView
+    private lateinit var questionsContainer: LinearLayout
+    private lateinit var uncertainTitle: TextView
+    private lateinit var uncertainContainer: LinearLayout
+    private lateinit var detailNotice: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_note_detail)
 
+        store = NoteStore(this)
+        generator = AiNoteGeneratorFactory.create()
+
         val noteId = intent.getStringExtra(EXTRA_NOTE_ID)
-        val note = noteId?.let { NoteStore(this).findById(it) }
-        if (note == null) {
+        val loadedNote = noteId?.let(store::findById)
+        if (loadedNote == null) {
             finish()
             return
         }
+        note = loadedNote
 
+        bindViews()
         findViewById<TextView>(R.id.backButton).setOnClickListener { finish() }
+        generateButton.setOnClickListener { generateNote() }
         bind(note)
+
+        if (intent.getBooleanExtra(EXTRA_AUTO_GENERATE, false) &&
+            (note.status == NoteStatus.DRAFT || note.status == NoteStatus.FAILED)
+        ) {
+            generateNote()
+        }
     }
 
-    private fun bind(note: NoteItem) {
-        findViewById<TextView>(R.id.detailCourseText).text = note.courseName
-        findViewById<TextView>(R.id.detailTitleText).text = note.title
+    private fun bindViews() {
+        statusText = findViewById(R.id.detailStatusText)
+        errorText = findViewById(R.id.generationErrorText)
+        progressBar = findViewById(R.id.generationProgress)
+        generateButton = findViewById(R.id.generateButton)
+        imageView = findViewById(R.id.detailImage)
+        summaryTitle = findViewById(R.id.summaryTitleText)
+        summaryText = findViewById(R.id.detailSummaryText)
+        keyPointsTitle = findViewById(R.id.keyPointsTitleText)
+        keyPointsContainer = findViewById(R.id.keyPointsContainer)
+        questionsTitle = findViewById(R.id.questionsTitleText)
+        questionsContainer = findViewById(R.id.questionsContainer)
+        uncertainTitle = findViewById(R.id.uncertainTitleText)
+        uncertainContainer = findViewById(R.id.uncertainContainer)
+        detailNotice = findViewById(R.id.detailNoticeText)
+    }
+
+    private fun bind(current: NoteItem) {
+        note = current
+        findViewById<TextView>(R.id.detailCourseText).text = current.courseName
+        findViewById<TextView>(R.id.detailTitleText).text = current.title
         findViewById<TextView>(R.id.detailDateText).text = SimpleDateFormat(
             "yyyy 年 MM 月 dd 日 HH:mm",
             Locale.CHINA
-        ).format(Date(note.createdAt))
-        findViewById<TextView>(R.id.detailSummaryText).text = note.summary
+        ).format(Date(current.createdAt))
 
-        val imageView = findViewById<ImageView>(R.id.detailImage)
-        loadScaledBitmap(note.imagePath)?.let(imageView::setImageBitmap)
+        statusText.bindStatus(current.status, current.isMock)
+        loadScaledBitmap(current.imagePath)?.let(imageView::setImageBitmap)
 
-        val keyPointContainer = findViewById<LinearLayout>(R.id.keyPointsContainer)
-        note.keyPoints.forEach { addBullet(keyPointContainer, it) }
+        errorText.visibility = if (
+            current.status == NoteStatus.FAILED &&
+            current.errorMessage.isNotBlank()
+        ) {
+            errorText.text = getString(R.string.ai_failure_prefix, current.errorMessage)
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
 
-        val questionContainer = findViewById<LinearLayout>(R.id.questionsContainer)
-        note.questions.forEach { addBullet(questionContainer, it) }
+        val hasResult = current.status == NoteStatus.SUCCESS
+        summaryTitle.visibility = if (hasResult) View.VISIBLE else View.GONE
+        summaryText.visibility = if (hasResult) View.VISIBLE else View.GONE
+        summaryText.text = current.summary
+
+        keyPointsTitle.visibility = if (hasResult) View.VISIBLE else View.GONE
+        keyPointsContainer.visibility = if (hasResult) View.VISIBLE else View.GONE
+        keyPointsContainer.removeAllViews()
+        current.keyPoints.forEach { addBullet(keyPointsContainer, it) }
+
+        questionsTitle.visibility = if (hasResult) View.VISIBLE else View.GONE
+        questionsContainer.visibility = if (hasResult) View.VISIBLE else View.GONE
+        questionsContainer.removeAllViews()
+        current.questions.forEach { addBullet(questionsContainer, it) }
+
+        val showUncertain = hasResult && current.uncertain.isNotEmpty()
+        uncertainTitle.visibility = if (showUncertain) View.VISIBLE else View.GONE
+        uncertainContainer.visibility = if (showUncertain) View.VISIBLE else View.GONE
+        uncertainContainer.removeAllViews()
+        current.uncertain.forEach { addBullet(uncertainContainer, it) }
+
+        detailNotice.visibility = if (hasResult) View.VISIBLE else View.GONE
+        updateGenerationControls(current.status)
+    }
+
+    private fun updateGenerationControls(status: NoteStatus) {
+        val shouldShowButton =
+            !isGenerating &&
+                status != NoteStatus.SUCCESS
+        generateButton.visibility = if (shouldShowButton) View.VISIBLE else View.GONE
+        generateButton.setText(
+            if (status == NoteStatus.FAILED) R.string.retry_generate_note
+            else R.string.generate_note
+        )
+        progressBar.visibility =
+            if (isGenerating || status == NoteStatus.PROCESSING) View.VISIBLE else View.GONE
+    }
+
+    private fun generateNote() {
+        if (isGenerating || note.status == NoteStatus.SUCCESS) return
+        val imageFile = File(note.imagePath)
+        if (!imageFile.exists()) {
+            fail("原始板书图片不存在，无法重新整理")
+            return
+        }
+
+        isGenerating = true
+        note = store.update(
+            note.copy(
+                status = NoteStatus.PROCESSING,
+                errorMessage = ""
+            )
+        )
+        bind(note)
+
+        generator.generate(note.courseName, imageFile) { result ->
+            isGenerating = false
+            result.fold(
+                onSuccess = ::applyGeneratedNote,
+                onFailure = { error ->
+                    fail(error.message ?: "AI 整理失败")
+                }
+            )
+        }
+    }
+
+    private fun applyGeneratedNote(generated: GeneratedNote) {
+        note = store.update(
+            note.copy(
+                title = generated.title,
+                summary = generated.summary,
+                keyPoints = generated.keyPoints,
+                questions = generated.questions,
+                keywords = generated.keywords,
+                uncertain = generated.uncertain,
+                isMock = generated.isMock,
+                status = NoteStatus.SUCCESS,
+                errorMessage = ""
+            )
+        )
+        if (!isFinishing && !isDestroyed) {
+            bind(note)
+        }
+    }
+
+    private fun fail(message: String) {
+        isGenerating = false
+        note = store.update(
+            note.copy(
+                status = NoteStatus.FAILED,
+                errorMessage = message
+            )
+        )
+        if (!isFinishing && !isDestroyed) {
+            bind(note)
+        }
     }
 
     private fun addBullet(container: LinearLayout, text: String) {
@@ -84,12 +240,17 @@ class NoteDetailActivity : AppCompatActivity() {
 
     companion object {
         private const val EXTRA_NOTE_ID = "extra_note_id"
+        private const val EXTRA_AUTO_GENERATE = "extra_auto_generate"
 
-        fun createIntent(context: Context, noteId: String): Intent {
+        fun createIntent(
+            context: Context,
+            noteId: String,
+            autoGenerate: Boolean = false
+        ): Intent {
             return Intent(context, NoteDetailActivity::class.java).apply {
                 putExtra(EXTRA_NOTE_ID, noteId)
+                putExtra(EXTRA_AUTO_GENERATE, autoGenerate)
             }
         }
     }
 }
-

@@ -1,3 +1,19 @@
+import java.util.Properties
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { input ->
+        localProperties.load(input)
+    }
+}
+
+fun localValue(name: String): String {
+    return localProperties.getProperty(name, "")
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+}
+
 plugins {
     id("com.android.application")
 }
@@ -10,8 +26,12 @@ android {
         applicationId = "com.team.classroomnotes"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
+
+        buildConfigField("String", "AI_ENDPOINT", "\"${localValue("AI_ENDPOINT")}\"")
+        buildConfigField("String", "AI_MODEL", "\"${localValue("AI_MODEL")}\"")
+        buildConfigField("String", "AI_API_KEY", "\"${localValue("AI_API_KEY")}\"")
     }
 
     buildTypes {
@@ -27,6 +47,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 }
 
