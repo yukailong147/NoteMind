@@ -16,6 +16,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.team.classroomnotes.data.NoteItem
@@ -33,6 +34,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var courseInput: EditText
     private lateinit var captureButton: Button
+    private lateinit var pickImageButton: Button
     private lateinit var sampleButton: Button
     private lateinit var statusText: TextView
     private lateinit var noteCountText: TextView
@@ -49,6 +51,12 @@ class MainActivity : AppCompatActivity() {
         handleCameraResult(success)
     }
 
+    private val pickImage = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { imageUri ->
+        handlePickedImage(imageUri)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -56,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         store = NoteStore(this)
         courseInput = findViewById(R.id.courseInput)
         captureButton = findViewById(R.id.captureButton)
+        pickImageButton = findViewById(R.id.pickImageButton)
         sampleButton = findViewById(R.id.sampleButton)
         statusText = findViewById(R.id.statusText)
         noteCountText = findViewById(R.id.noteCountText)
@@ -64,6 +73,11 @@ class MainActivity : AppCompatActivity() {
 
         courseInput.setText(getString(R.string.default_course))
         captureButton.setOnClickListener { openSystemCamera() }
+        pickImageButton.setOnClickListener {
+            pickImage.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        }
         sampleButton.setOnClickListener { createSampleCapture() }
 
         renderNotes()
@@ -120,6 +134,18 @@ class MainActivity : AppCompatActivity() {
             persistentPhoto,
             pendingCourseName.ifBlank { currentCourseName() }
         )
+    }
+
+    private fun handlePickedImage(imageUri: Uri?) {
+        if (imageUri == null) return
+
+        val persistentPhoto = copyPickedImageToAppStorage(imageUri)
+        if (persistentPhoto == null) {
+            showMessage(getString(R.string.pick_image_failed))
+            return
+        }
+
+        createDraftAndOpen(persistentPhoto, currentCourseName())
     }
 
     private fun createSampleCapture() {
@@ -188,6 +214,18 @@ class MainActivity : AppCompatActivity() {
         val photoDirectory = File(filesDir, "photos").apply { mkdirs() }
         val destination = File(photoDirectory, "${UUID.randomUUID()}.jpg")
         source.inputStream().use { input ->
+            destination.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        destination
+    }.getOrNull()
+
+    private fun copyPickedImageToAppStorage(uri: Uri): File? = runCatching {
+        val photoDirectory = File(filesDir, "photos").apply { mkdirs() }
+        val destination = File(photoDirectory, "${UUID.randomUUID()}.jpg")
+        contentResolver.openInputStream(uri).use { input ->
+            requireNotNull(input) { "无法打开所选图片" }
             destination.outputStream().use { output ->
                 input.copyTo(output)
             }

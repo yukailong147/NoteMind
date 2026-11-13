@@ -7,6 +7,7 @@
     <string name="course_hint">输入课程名称</string>
     <string name="default_course">数据结构</string>
     <string name="capture_button">拍摄板书</string>
+    <string name="pick_image_button">从相册选择板书</string>
     <string name="sample_button">测试：生成示例板书</string>
     <string name="mock_notice">默认支持 DeepSeek-Flash。填入 API Key 后会自动切换为真实 AI 板书整理。</string>
     <string name="recent_notes">最近笔记</string>
@@ -23,6 +24,7 @@
     <string name="camera_unavailable">没有找到可用的相机应用</string>
     <string name="capture_cancelled">已取消拍照</string>
     <string name="capture_failed">照片没有保存成功，请重试</string>
+    <string name="pick_image_failed">图片读取失败，请重新选择</string>
     <string name="camera_permission_hint">系统相机需要临时写入缓存图片，应用已经通过安全文件接口授权。</string>
     <string name="back">← 返回</string>
     <string name="source_photo">原始板书</string>
