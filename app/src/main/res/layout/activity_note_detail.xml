@@ -72,6 +72,15 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/generationInfoText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/text_muted"
+            android:textSize="11sp"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/generationErrorText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -103,6 +112,37 @@
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="15sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/editButton"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/pale_blue"
+                android:text="@string/edit_note"
+                android:textAllCaps="false"
+                android:textColor="@color/navy"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/deleteButton"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:backgroundTint="#FDECEC"
+                android:text="@string/delete_note"
+                android:textAllCaps="false"
+                android:textColor="#9B2C2C"
+                android:textSize="14sp" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"

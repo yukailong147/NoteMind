@@ -46,6 +46,15 @@ class NoteStore(context: Context) {
     }
 
     @Synchronized
+    fun delete(noteId: String): NoteItem? {
+        val notes = loadAll().toMutableList()
+        val removed = notes.firstOrNull { it.id == noteId } ?: return null
+        notes.removeAll { it.id == noteId }
+        writeAll(notes)
+        return removed
+    }
+
+    @Synchronized
     fun findById(id: String): NoteItem? = loadAll().firstOrNull { it.id == id }
 
     private fun writeAll(notes: List<NoteItem>) {
@@ -69,6 +78,9 @@ class NoteStore(context: Context) {
         put("isMock", isMock)
         put("status", status.name)
         put("errorMessage", errorMessage)
+        put("providerName", providerName)
+        put("modelName", modelName)
+        put("latencyMs", latencyMs)
     }
 
     private fun JSONObject.toNoteItem(): NoteItem = NoteItem(
@@ -84,7 +96,10 @@ class NoteStore(context: Context) {
         createdAt = getLong("createdAt"),
         isMock = optBoolean("isMock", false),
         status = NoteStatus.fromStorage(optString("status").takeIf { it.isNotBlank() }),
-        errorMessage = optString("errorMessage", "")
+        errorMessage = optString("errorMessage", ""),
+        providerName = optString("providerName", ""),
+        modelName = optString("modelName", ""),
+        latencyMs = optLong("latencyMs", 0)
     )
 
     private fun List<String>.toJsonArray(): JSONArray = JSONArray().also { array ->

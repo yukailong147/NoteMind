@@ -41,7 +41,10 @@ class MockAiNoteGenerator : AiNoteGenerator {
                         ),
                         keywords = listOf("二叉树", "中序遍历", "递归"),
                         uncertain = listOf("当前图片内容尚未接入真实视觉模型"),
-                        isMock = true
+                        isMock = true,
+                        providerName = "Mock",
+                        modelName = "mock-local",
+                        latencyMs = 900
                     )
                 )
             )

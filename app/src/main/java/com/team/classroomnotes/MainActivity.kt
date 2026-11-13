@@ -1,5 +1,6 @@
 package com.team.classroomnotes
 
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -8,6 +9,8 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
@@ -19,6 +22,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import com.team.classroomnotes.data.LastDeletedNoteHolder
 import com.team.classroomnotes.data.NoteItem
 import com.team.classroomnotes.data.NoteStore
 import com.team.classroomnotes.data.NoteStatus
@@ -40,10 +44,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var noteCountText: TextView
     private lateinit var emptyStateText: TextView
     private lateinit var notesContainer: LinearLayout
+    private lateinit var undoBar: LinearLayout
+    private lateinit var undoMessageText: TextView
+    private lateinit var undoButton: Button
     private lateinit var store: NoteStore
 
     private var pendingPhotoFile: File? = null
     private var pendingCourseName: String = ""
+    private var pendingDeletedNote: NoteItem? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var finalizeDeleteRunnable: Runnable? = null
 
     private val takePicture = registerForActivityResult(
         ActivityResultContracts.TakePicture()
@@ -55,6 +65,16 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.PickVisualMedia()
     ) { imageUri ->
         handlePickedImage(imageUri)
+    }
+
+    private val detailLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val deleted = result.resultCode == Activity.RESULT_OK &&
+            result.data?.getBooleanExtra(NoteDetailActivity.EXTRA_DELETED_NOTE, false) == true
+        if (deleted) {
+            showUndoForLastDeletedNote()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,6 +90,9 @@ class MainActivity : AppCompatActivity() {
         noteCountText = findViewById(R.id.noteCountText)
         emptyStateText = findViewById(R.id.emptyStateText)
         notesContainer = findViewById(R.id.notesContainer)
+        undoBar = findViewById(R.id.undoBar)
+        undoMessageText = findViewById(R.id.undoMessageText)
+        undoButton = findViewById(R.id.undoButton)
 
         courseInput.setText(getString(R.string.default_course))
         captureButton.setOnClickListener { openSystemCamera() }
@@ -79,6 +102,7 @@ class MainActivity : AppCompatActivity() {
             )
         }
         sampleButton.setOnClickListener { createSampleCapture() }
+        undoButton.setOnClickListener { undoDelete() }
 
         renderNotes()
     }
@@ -201,7 +225,7 @@ class MainActivity : AppCompatActivity() {
         store.add(note)
         renderNotes()
         Toast.makeText(this, R.string.note_saved, Toast.LENGTH_SHORT).show()
-        startActivity(
+        detailLauncher.launch(
             NoteDetailActivity.createIntent(
                 context = this,
                 noteId = note.id,
@@ -267,7 +291,7 @@ class MainActivity : AppCompatActivity() {
                 bindStatus(note.status, note.isMock)
             }
             itemView.setOnClickListener {
-                startActivity(
+                detailLauncher.launch(
                     NoteDetailActivity.createIntent(this, note.id)
                 )
             }
@@ -288,6 +312,50 @@ class MainActivity : AppCompatActivity() {
     private fun formatDate(timestamp: Long): String {
         return SimpleDateFormat("MM 月 dd 日 HH:mm", Locale.CHINA)
             .format(Date(timestamp))
+    }
+
+    private fun showUndoForLastDeletedNote() {
+        finalizePendingDelete()
+        val deleted = LastDeletedNoteHolder.note ?: return
+        pendingDeletedNote = deleted
+        undoMessageText.text = getString(R.string.note_deleted)
+        undoBar.visibility = View.VISIBLE
+        renderNotes()
+
+        val runnable = Runnable {
+            finalizePendingDelete()
+            undoBar.visibility = View.GONE
+        }
+        finalizeDeleteRunnable = runnable
+        mainHandler.postDelayed(runnable, 8_000)
+    }
+
+    private fun undoDelete() {
+        finalizeDeleteRunnable?.let(mainHandler::removeCallbacks)
+        finalizeDeleteRunnable = null
+        pendingDeletedNote?.let(store::add)
+        pendingDeletedNote = null
+        LastDeletedNoteHolder.note = null
+        undoBar.visibility = View.GONE
+        renderNotes()
+        Toast.makeText(this, R.string.note_restored, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun finalizePendingDelete() {
+        finalizeDeleteRunnable?.let(mainHandler::removeCallbacks)
+        finalizeDeleteRunnable = null
+        pendingDeletedNote?.let { note ->
+            runCatching { File(note.imagePath).delete() }
+        }
+        pendingDeletedNote = null
+        LastDeletedNoteHolder.note = null
+    }
+
+    override fun onDestroy() {
+        if (isFinishing) {
+            finalizePendingDelete()
+        }
+        super.onDestroy()
     }
 }
 

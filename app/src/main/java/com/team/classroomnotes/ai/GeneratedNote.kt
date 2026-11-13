@@ -7,6 +7,9 @@ data class GeneratedNote(
     val questions: List<String>,
     val keywords: List<String>,
     val uncertain: List<String>,
-    val isMock: Boolean
+    val isMock: Boolean,
+    val providerName: String = "",
+    val modelName: String = "",
+    val latencyMs: Long = 0
 )
 

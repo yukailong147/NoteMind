@@ -24,8 +24,17 @@ class RemoteAiNoteGenerator : AiNoteGenerator {
         callback: (Result<GeneratedNote>) -> Unit
     ) {
         executor.execute {
+            val startedAt = System.currentTimeMillis()
             val result = runCatching {
-                requestModel(courseName, imageFile)
+                requestModel(courseName, imageFile).copy(
+                    providerName = if (BuildConfig.AI_ENDPOINT.contains("deepseek", ignoreCase = true)) {
+                        "DeepSeek"
+                    } else {
+                        "OpenAI Compatible"
+                    },
+                    modelName = BuildConfig.AI_MODEL,
+                    latencyMs = System.currentTimeMillis() - startedAt
+                )
             }
             mainHandler.post { callback(result) }
         }

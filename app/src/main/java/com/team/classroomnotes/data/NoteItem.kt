@@ -13,7 +13,10 @@ data class NoteItem(
     val createdAt: Long,
     val isMock: Boolean,
     val status: NoteStatus,
-    val errorMessage: String
+    val errorMessage: String,
+    val providerName: String = "",
+    val modelName: String = "",
+    val latencyMs: Long = 0
 )
 
 enum class NoteStatus {
