@@ -8,8 +8,9 @@ if (localPropertiesFile.exists()) {
     }
 }
 
-fun localValue(name: String, fallback: String = ""): String {
-    return localProperties.getProperty(name, fallback)
+fun configValue(name: String, fallback: String = ""): String {
+    val projectOverride = project.findProperty(name) as String?
+    return (projectOverride ?: localProperties.getProperty(name, fallback))
         .replace("\\", "\\\\")
         .replace("\"", "\\\"")
 }
@@ -32,14 +33,14 @@ android {
         buildConfigField(
             "String",
             "AI_ENDPOINT",
-            "\"${localValue("AI_ENDPOINT", "https://api.deepseek.com/chat/completions")}\""
+            "\"${configValue("AI_ENDPOINT", "https://api.deepseek.com/chat/completions")}\""
         )
         buildConfigField(
             "String",
             "AI_MODEL",
-            "\"${localValue("AI_MODEL", "deepseek-flash")}\""
+            "\"${configValue("AI_MODEL", "deepseek-flash")}\""
         )
-        buildConfigField("String", "AI_API_KEY", "\"${localValue("AI_API_KEY")}\"")
+        buildConfigField("String", "AI_API_KEY", "\"${configValue("AI_API_KEY")}\"")
     }
 
     buildTypes {

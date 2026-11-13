@@ -119,3 +119,9 @@ DeepSeek 当前 Base64 请求体上限为 48 MiB。应用会先把图片长边�
 
 正式公开版本应通过一个很小的中转服务调用 DeepSeek，手机端只提交任务和模型编号，不保存 DeepSeek Key。
 
+## 不要分享包含 Key 的 APK
+
+从 Android Studio 直接运行到自己的手机可以使用当前 Key，但生成的调试 APK 可能包含这个 Key。不要把这个 APK 发到微信、GitHub 或比赛提交系统。
+
+开源和分享时只共享源码，并让每位成员把各自的 Key 写入自己的 `local.properties`。`dist` 中的 APK 已设置为不进入 Git。
+

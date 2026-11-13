@@ -9,4 +9,5 @@
 .cxx
 app/build
 gradle/local-dist/*.zip
+dist/*.apk
 
