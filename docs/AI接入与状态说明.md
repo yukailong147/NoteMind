@@ -51,7 +51,7 @@
 
 ## 接入真实 AI
 
-当前网络实现采用常见的 OpenAI 兼容聊天接口，并要求服务能够读取 `image_url` 形式的数据 URL。
+当前网络实现采用常见的 OpenAI 兼容聊天接口，并要求服务能够读取 `image_url` 形式的数据 URL。已经确认 `deepseek-flash` 支持这种方式，专用步骤见 `DeepSeek接入说明.md`。
 
 在项目根目录的 `local.properties` 中加入：
 

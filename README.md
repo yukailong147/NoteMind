@@ -49,5 +49,6 @@
 ```text
 docs/第一条功能链说明.md
 docs/AI接入与状态说明.md
+docs/DeepSeek接入说明.md
 ```
 

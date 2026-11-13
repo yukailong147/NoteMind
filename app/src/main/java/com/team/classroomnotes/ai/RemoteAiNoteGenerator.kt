@@ -104,6 +104,11 @@ class RemoteAiNoteGenerator : AiNoteGenerator {
                     .put(JSONObject().put("role", "user").put("content", userContent))
             )
             .put("temperature", 0.2)
+            .put("max_tokens", 1200)
+            .put(
+                "response_format",
+                JSONObject().put("type", "json_object")
+            )
     }
 
     private fun extractAssistantContent(responseBody: String): String {

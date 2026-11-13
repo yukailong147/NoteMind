@@ -8,8 +8,8 @@ if (localPropertiesFile.exists()) {
     }
 }
 
-fun localValue(name: String): String {
-    return localProperties.getProperty(name, "")
+fun localValue(name: String, fallback: String = ""): String {
+    return localProperties.getProperty(name, fallback)
         .replace("\\", "\\\\")
         .replace("\"", "\\\"")
 }
@@ -26,11 +26,19 @@ android {
         applicationId = "com.team.classroomnotes"
         minSdk = 24
         targetSdk = 37
-        versionCode = 2
-        versionName = "0.2.0"
+        versionCode = 3
+        versionName = "0.3.0"
 
-        buildConfigField("String", "AI_ENDPOINT", "\"${localValue("AI_ENDPOINT")}\"")
-        buildConfigField("String", "AI_MODEL", "\"${localValue("AI_MODEL")}\"")
+        buildConfigField(
+            "String",
+            "AI_ENDPOINT",
+            "\"${localValue("AI_ENDPOINT", "https://api.deepseek.com/chat/completions")}\""
+        )
+        buildConfigField(
+            "String",
+            "AI_MODEL",
+            "\"${localValue("AI_MODEL", "deepseek-flash")}\""
+        )
         buildConfigField("String", "AI_API_KEY", "\"${localValue("AI_API_KEY")}\"")
     }
 
