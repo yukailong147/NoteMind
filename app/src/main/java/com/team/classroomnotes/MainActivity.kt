@@ -315,9 +315,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showUndoForLastDeletedNote() {
-        finalizePendingDelete()
         val deleted = LastDeletedNoteHolder.note ?: return
+        finalizePendingDelete()
         pendingDeletedNote = deleted
+        LastDeletedNoteHolder.note = deleted
         undoMessageText.text = getString(R.string.note_deleted)
         undoBar.visibility = View.VISIBLE
         renderNotes()
