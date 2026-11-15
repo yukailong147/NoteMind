@@ -145,6 +145,7 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/sourcePhotoTitleText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
@@ -162,6 +163,17 @@
             android:clipToOutline="true"
             android:contentDescription="@string/photo_content_description"
             android:scaleType="centerCrop" />
+
+        <Button
+            android:id="@+id/chatButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/pale_blue"
+            android:text="@string/chat_with_ai"
+            android:textAllCaps="false"
+            android:textColor="@color/navy"
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/summaryTitleText"

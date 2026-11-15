@@ -96,6 +96,8 @@ class NoteStore(context: Context) {
         put("providerName", providerName)
         put("modelName", modelName)
         put("latencyMs", latencyMs)
+        put("sourceType", sourceType)
+        put("sourceNoteId", sourceNoteId)
     }
 
     private fun JSONObject.toNoteItem(): NoteItem = NoteItem(
@@ -114,7 +116,9 @@ class NoteStore(context: Context) {
         errorMessage = optString("errorMessage", ""),
         providerName = optString("providerName", ""),
         modelName = optString("modelName", ""),
-        latencyMs = optLong("latencyMs", 0)
+        latencyMs = optLong("latencyMs", 0),
+        sourceType = optString("sourceType", "photo"),
+        sourceNoteId = optString("sourceNoteId", "")
     )
 
     private fun List<String>.toJsonArray(): JSONArray = JSONArray().also { array ->

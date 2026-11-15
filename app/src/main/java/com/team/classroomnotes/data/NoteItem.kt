@@ -16,7 +16,9 @@ data class NoteItem(
     val errorMessage: String,
     val providerName: String = "",
     val modelName: String = "",
-    val latencyMs: Long = 0
+    val latencyMs: Long = 0,
+    val sourceType: String = "photo",
+    val sourceNoteId: String = ""
 )
 
 enum class NoteStatus {

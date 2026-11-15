@@ -37,8 +37,10 @@ class NoteDetailActivity : AppCompatActivity() {
     private lateinit var generateButton: Button
     private lateinit var editButton: Button
     private lateinit var deleteButton: Button
+    private lateinit var chatButton: Button
     private lateinit var generationInfoText: TextView
     private lateinit var imageView: ImageView
+    private lateinit var sourcePhotoTitle: TextView
     private lateinit var summaryTitle: TextView
     private lateinit var summaryText: TextView
     private lateinit var keyPointsTitle: TextView
@@ -71,6 +73,9 @@ class NoteDetailActivity : AppCompatActivity() {
             startActivity(EditNoteActivity.createIntent(this, note.id))
         }
         deleteButton.setOnClickListener { confirmDelete() }
+        chatButton.setOnClickListener {
+            startActivity(NoteChatActivity.createIntent(this, note.id))
+        }
         bind(note)
 
         if (intent.getBooleanExtra(EXTRA_AUTO_GENERATE, false) &&
@@ -94,8 +99,10 @@ class NoteDetailActivity : AppCompatActivity() {
         generateButton = findViewById(R.id.generateButton)
         editButton = findViewById(R.id.editButton)
         deleteButton = findViewById(R.id.deleteButton)
+        chatButton = findViewById(R.id.chatButton)
         generationInfoText = findViewById(R.id.generationInfoText)
         imageView = findViewById(R.id.detailImage)
+        sourcePhotoTitle = findViewById(R.id.sourcePhotoTitleText)
         summaryTitle = findViewById(R.id.summaryTitleText)
         summaryText = findViewById(R.id.detailSummaryText)
         keyPointsTitle = findViewById(R.id.keyPointsTitleText)
@@ -128,7 +135,14 @@ class NoteDetailActivity : AppCompatActivity() {
         } else {
             generationInfoText.visibility = View.GONE
         }
-        loadScaledBitmap(current.imagePath)?.let(imageView::setImageBitmap)
+        val hasImage = current.imagePath.isNotBlank() && File(current.imagePath).exists()
+        sourcePhotoTitle.visibility = if (hasImage) View.VISIBLE else View.GONE
+        imageView.visibility = if (hasImage) View.VISIBLE else View.GONE
+        if (hasImage) {
+            loadScaledBitmap(current.imagePath)?.let(imageView::setImageBitmap)
+        } else {
+            imageView.setImageDrawable(null)
+        }
 
         errorText.visibility = if (
             current.status == NoteStatus.FAILED &&
@@ -144,6 +158,7 @@ class NoteDetailActivity : AppCompatActivity() {
             current.summary.isNotBlank() ||
                 current.keyPoints.isNotEmpty() ||
                 current.questions.isNotEmpty()
+        chatButton.visibility = if (hasResult) View.VISIBLE else View.GONE
         summaryTitle.visibility = if (hasResult) View.VISIBLE else View.GONE
         summaryText.visibility = if (hasResult) View.VISIBLE else View.GONE
         summaryText.text = current.summary
@@ -183,6 +198,7 @@ class NoteDetailActivity : AppCompatActivity() {
             if (isGenerating || status == NoteStatus.PROCESSING) View.VISIBLE else View.GONE
         editButton.isEnabled = !isGenerating
         deleteButton.isEnabled = !isGenerating
+        chatButton.isEnabled = !isGenerating
     }
 
     private fun requestGeneration() {
