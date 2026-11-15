@@ -7,6 +7,7 @@ import java.io.File
 
 class NoteStore(context: Context) {
     private val notesFile = File(context.filesDir, "notes.json")
+    private val pendingDeletionFile = File(context.filesDir, "pending_deletion.json")
 
     @Synchronized
     fun loadAll(): List<NoteItem> {
@@ -51,7 +52,21 @@ class NoteStore(context: Context) {
         val removed = notes.firstOrNull { it.id == noteId } ?: return null
         notes.removeAll { it.id == noteId }
         writeAll(notes)
+        pendingDeletionFile.writeText(removed.toJson().toString())
         return removed
+    }
+
+    @Synchronized
+    fun loadPendingDeletion(): NoteItem? {
+        if (!pendingDeletionFile.exists()) return null
+        return runCatching {
+            JSONObject(pendingDeletionFile.readText()).toNoteItem()
+        }.getOrNull()
+    }
+
+    @Synchronized
+    fun clearPendingDeletion() {
+        runCatching { pendingDeletionFile.delete() }
     }
 
     @Synchronized

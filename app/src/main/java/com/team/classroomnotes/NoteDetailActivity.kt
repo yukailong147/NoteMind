@@ -19,7 +19,6 @@ import com.team.classroomnotes.ai.GeneratedNote
 import com.team.classroomnotes.data.NoteItem
 import com.team.classroomnotes.data.NoteStatus
 import com.team.classroomnotes.data.NoteStore
-import com.team.classroomnotes.data.LastDeletedNoteHolder
 import com.team.classroomnotes.ui.bindStatus
 import java.io.File
 import java.text.SimpleDateFormat
@@ -257,7 +256,6 @@ class NoteDetailActivity : AppCompatActivity() {
             .setPositiveButton(R.string.delete_note) { _, _ ->
                 val removed = store.delete(note.id)
                 if (removed != null) {
-                    LastDeletedNoteHolder.note = removed
                     setResult(
                         RESULT_OK,
                         Intent().putExtra(EXTRA_DELETED_NOTE, true)

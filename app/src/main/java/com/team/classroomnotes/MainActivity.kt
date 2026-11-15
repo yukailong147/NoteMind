@@ -22,7 +22,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
-import com.team.classroomnotes.data.LastDeletedNoteHolder
 import com.team.classroomnotes.data.NoteItem
 import com.team.classroomnotes.data.NoteStore
 import com.team.classroomnotes.data.NoteStatus
@@ -73,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         val deleted = result.resultCode == Activity.RESULT_OK &&
             result.data?.getBooleanExtra(NoteDetailActivity.EXTRA_DELETED_NOTE, false) == true
         if (deleted) {
-            showUndoForLastDeletedNote()
+            showUndoFromStorage()
         }
     }
 
@@ -111,6 +110,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         if (::store.isInitialized) {
             renderNotes()
+            showUndoFromStorage()
         }
     }
 
@@ -314,21 +314,23 @@ class MainActivity : AppCompatActivity() {
             .format(Date(timestamp))
     }
 
-    private fun showUndoForLastDeletedNote() {
-        val deleted = LastDeletedNoteHolder.note ?: return
+    private fun showUndoFromStorage() {
+        val deleted = store.loadPendingDeletion() ?: return
+        if (undoBar.visibility == View.VISIBLE && pendingDeletedNote?.id == deleted.id) return
         finalizePendingDelete()
         pendingDeletedNote = deleted
-        LastDeletedNoteHolder.note = deleted
         undoMessageText.text = getString(R.string.note_deleted)
         undoBar.visibility = View.VISIBLE
+        undoBar.bringToFront()
         renderNotes()
+        Toast.makeText(this, R.string.note_deleted, Toast.LENGTH_SHORT).show()
 
         val runnable = Runnable {
             finalizePendingDelete()
             undoBar.visibility = View.GONE
         }
         finalizeDeleteRunnable = runnable
-        mainHandler.postDelayed(runnable, 8_000)
+        mainHandler.postDelayed(runnable, UNDO_DURATION_MS)
     }
 
     private fun undoDelete() {
@@ -336,7 +338,7 @@ class MainActivity : AppCompatActivity() {
         finalizeDeleteRunnable = null
         pendingDeletedNote?.let(store::add)
         pendingDeletedNote = null
-        LastDeletedNoteHolder.note = null
+        store.clearPendingDeletion()
         undoBar.visibility = View.GONE
         renderNotes()
         Toast.makeText(this, R.string.note_restored, Toast.LENGTH_SHORT).show()
@@ -348,8 +350,11 @@ class MainActivity : AppCompatActivity() {
         pendingDeletedNote?.let { note ->
             runCatching { File(note.imagePath).delete() }
         }
+        val deletedId = pendingDeletedNote?.id
         pendingDeletedNote = null
-        LastDeletedNoteHolder.note = null
+        if (deletedId != null && store.loadPendingDeletion()?.id == deletedId) {
+            store.clearPendingDeletion()
+        }
     }
 
     override fun onDestroy() {
@@ -357,6 +362,10 @@ class MainActivity : AppCompatActivity() {
             finalizePendingDelete()
         }
         super.onDestroy()
+    }
+
+    companion object {
+        private const val UNDO_DURATION_MS = 12_000L
     }
 }
 
