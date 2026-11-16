@@ -18,7 +18,10 @@ data class NoteItem(
     val modelName: String = "",
     val latencyMs: Long = 0,
     val sourceType: String = "photo",
-    val sourceNoteId: String = ""
+    val sourceNoteId: String = "",
+    val bookName: String = "",
+    val chapter: String = "",
+    val pageNumber: String = ""
 )
 
 enum class NoteStatus {

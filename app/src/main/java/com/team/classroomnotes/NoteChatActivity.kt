@@ -260,7 +260,10 @@ class NoteChatActivity : AppCompatActivity() {
             modelName = generated.modelName,
             latencyMs = generated.latencyMs,
             sourceType = "chat",
-            sourceNoteId = note.id
+            sourceNoteId = note.id,
+            bookName = note.bookName,
+            chapter = note.chapter,
+            pageNumber = note.pageNumber
         )
         noteStore.add(newNote)
 

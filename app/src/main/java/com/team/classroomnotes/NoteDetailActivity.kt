@@ -38,7 +38,9 @@ class NoteDetailActivity : AppCompatActivity() {
     private lateinit var editButton: Button
     private lateinit var deleteButton: Button
     private lateinit var chatButton: Button
+    private lateinit var relatedNotesButton: Button
     private lateinit var generationInfoText: TextView
+    private lateinit var bookInfoText: TextView
     private lateinit var imageView: ImageView
     private lateinit var sourcePhotoTitle: TextView
     private lateinit var summaryTitle: TextView
@@ -76,6 +78,9 @@ class NoteDetailActivity : AppCompatActivity() {
         chatButton.setOnClickListener {
             startActivity(NoteChatActivity.createIntent(this, note.id))
         }
+        relatedNotesButton.setOnClickListener {
+            startActivity(RelatedNotesActivity.createIntent(this, note.id))
+        }
         bind(note)
 
         if (intent.getBooleanExtra(EXTRA_AUTO_GENERATE, false) &&
@@ -100,7 +105,9 @@ class NoteDetailActivity : AppCompatActivity() {
         editButton = findViewById(R.id.editButton)
         deleteButton = findViewById(R.id.deleteButton)
         chatButton = findViewById(R.id.chatButton)
+        relatedNotesButton = findViewById(R.id.relatedNotesButton)
         generationInfoText = findViewById(R.id.generationInfoText)
+        bookInfoText = findViewById(R.id.bookInfoText)
         imageView = findViewById(R.id.detailImage)
         sourcePhotoTitle = findViewById(R.id.sourcePhotoTitleText)
         summaryTitle = findViewById(R.id.summaryTitleText)
@@ -135,6 +142,17 @@ class NoteDetailActivity : AppCompatActivity() {
         } else {
             generationInfoText.visibility = View.GONE
         }
+        val bindingParts = buildList {
+            if (current.bookName.isNotBlank()) add(current.bookName)
+            if (current.chapter.isNotBlank()) add(current.chapter)
+            if (current.pageNumber.isNotBlank()) add("第 ${current.pageNumber} 页")
+        }
+        if (bindingParts.isNotEmpty()) {
+            bookInfoText.text = bindingParts.joinToString(" · ")
+            bookInfoText.visibility = View.VISIBLE
+        } else {
+            bookInfoText.visibility = View.GONE
+        }
         val hasImage = current.imagePath.isNotBlank() && File(current.imagePath).exists()
         sourcePhotoTitle.visibility = if (hasImage) View.VISIBLE else View.GONE
         imageView.visibility = if (hasImage) View.VISIBLE else View.GONE
@@ -159,6 +177,7 @@ class NoteDetailActivity : AppCompatActivity() {
                 current.keyPoints.isNotEmpty() ||
                 current.questions.isNotEmpty()
         chatButton.visibility = if (hasResult) View.VISIBLE else View.GONE
+        relatedNotesButton.visibility = if (hasResult) View.VISIBLE else View.GONE
         summaryTitle.visibility = if (hasResult) View.VISIBLE else View.GONE
         summaryText.visibility = if (hasResult) View.VISIBLE else View.GONE
         summaryText.text = current.summary
@@ -199,6 +218,7 @@ class NoteDetailActivity : AppCompatActivity() {
         editButton.isEnabled = !isGenerating
         deleteButton.isEnabled = !isGenerating
         chatButton.isEnabled = !isGenerating
+        relatedNotesButton.isEnabled = !isGenerating
     }
 
     private fun requestGeneration() {

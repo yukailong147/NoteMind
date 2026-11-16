@@ -14,6 +14,9 @@ class EditNoteActivity : AppCompatActivity() {
     private lateinit var store: NoteStore
     private lateinit var note: NoteItem
     private lateinit var courseInput: EditText
+    private lateinit var bookInput: EditText
+    private lateinit var chapterInput: EditText
+    private lateinit var pageInput: EditText
     private lateinit var titleInput: EditText
     private lateinit var summaryInput: EditText
     private lateinit var keyPointsInput: EditText
@@ -34,6 +37,9 @@ class EditNoteActivity : AppCompatActivity() {
         note = loaded
 
         courseInput = findViewById(R.id.editCourseInput)
+        bookInput = findViewById(R.id.editBookInput)
+        chapterInput = findViewById(R.id.editChapterInput)
+        pageInput = findViewById(R.id.editPageInput)
         titleInput = findViewById(R.id.editTitleInput)
         summaryInput = findViewById(R.id.editSummaryInput)
         keyPointsInput = findViewById(R.id.editKeyPointsInput)
@@ -41,6 +47,9 @@ class EditNoteActivity : AppCompatActivity() {
         uncertainInput = findViewById(R.id.editUncertainInput)
 
         courseInput.setText(note.courseName)
+        bookInput.setText(note.bookName)
+        chapterInput.setText(note.chapter)
+        pageInput.setText(note.pageNumber)
         titleInput.setText(note.title)
         summaryInput.setText(note.summary)
         keyPointsInput.setText(note.keyPoints.joinToString("\n"))
@@ -61,6 +70,9 @@ class EditNoteActivity : AppCompatActivity() {
         val updated = note.copy(
             courseName = courseInput.text.toString().trim()
                 .ifBlank { getString(R.string.default_course) },
+            bookName = bookInput.text.toString().trim(),
+            chapter = chapterInput.text.toString().trim(),
+            pageNumber = pageInput.text.toString().trim(),
             title = title,
             summary = summaryInput.text.toString().trim(),
             keyPoints = linesOf(keyPointsInput),

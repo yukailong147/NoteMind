@@ -81,6 +81,16 @@
             android:visibility="gone" />
 
         <TextView
+            android:id="@+id/bookInfoText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/blue"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/generationErrorText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -171,6 +181,17 @@
             android:layout_marginTop="8dp"
             android:backgroundTint="@color/pale_blue"
             android:text="@string/chat_with_ai"
+            android:textAllCaps="false"
+            android:textColor="@color/navy"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/relatedNotesButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/pale_blue"
+            android:text="@string/find_related_notes"
             android:textAllCaps="false"
             android:textColor="@color/navy"
             android:textSize="14sp" />

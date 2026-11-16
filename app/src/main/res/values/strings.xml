@@ -48,6 +48,9 @@
     <string name="note_restored">笔记已恢复</string>
     <string name="edit_note_title">编辑笔记</string>
     <string name="edit_course_label">课程</string>
+    <string name="edit_book_label">教材名称</string>
+    <string name="edit_chapter_label">章节</string>
+    <string name="edit_page_label">页码</string>
     <string name="edit_title_label">标题</string>
     <string name="edit_summary_label">摘要</string>
     <string name="edit_key_points_label">知识点，每行一条</string>
@@ -75,6 +78,15 @@
     <string name="chat_note_saved">对话已整理为新笔记</string>
     <string name="chat_summary_failed">对话整理失败，请重试</string>
     <string name="chat_source_note">来源笔记：%1$s</string>
+    <string name="book_binding_info">%1$s · %2$s%3$s</string>
+    <string name="page_suffix"> · 第 %1$s 页</string>
+    <string name="find_related_notes">查找相关旧笔记</string>
+    <string name="related_notes_title">相关旧笔记</string>
+    <string name="related_notes_subtitle">根据关键词、课程和教材章节在本地查找</string>
+    <string name="related_notes_context">当前：%1$s · 找到 %2$d 条</string>
+    <string name="related_match_keywords">匹配：%1$s</string>
+    <string name="related_match_chapter">同一教材章节</string>
+    <string name="no_related_notes">没有找到相关旧笔记。可以先为笔记绑定教材章节，或继续生成同一主题的笔记。</string>
     <string name="draft_title">待整理课堂记录</string>
     <string name="ai_success">板书整理完成</string>
     <string name="ai_failed">整理失败，原图和草稿已经保留</string>
