@@ -32,7 +32,7 @@ class RemoteAiNoteGenerator : AiNoteGenerator {
                     } else {
                         "OpenAI Compatible"
                     },
-                    modelName = BuildConfig.AI_MODEL,
+                    modelName = BuildConfig.AI_IMAGE_MODEL,
                     latencyMs = System.currentTimeMillis() - startedAt
                 )
             }
@@ -105,7 +105,7 @@ class RemoteAiNoteGenerator : AiNoteGenerator {
             )
 
         return JSONObject()
-            .put("model", BuildConfig.AI_MODEL)
+            .put("model", BuildConfig.AI_IMAGE_MODEL)
             .put(
                 "messages",
                 JSONArray()

@@ -5,18 +5,23 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.ScrollView
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.team.classroomnotes.ai.AiChatClient
 import com.team.classroomnotes.ai.AiChatClientFactory
+import com.team.classroomnotes.ai.ChatModelCatalog
 import com.team.classroomnotes.ai.GeneratedNote
+import com.team.classroomnotes.data.AiPreferences
 import com.team.classroomnotes.data.ChatMessage
 import com.team.classroomnotes.data.ChatStore
 import com.team.classroomnotes.data.NoteItem
@@ -28,11 +33,14 @@ class NoteChatActivity : AppCompatActivity() {
     private lateinit var noteStore: NoteStore
     private lateinit var chatStore: ChatStore
     private lateinit var client: AiChatClient
+    private lateinit var aiPreferences: AiPreferences
     private lateinit var note: NoteItem
 
     private lateinit var backButton: Button
     private lateinit var organizeButton: Button
     private lateinit var chatContextText: TextView
+    private lateinit var modelSpinner: Spinner
+    private lateinit var modelHintText: TextView
     private lateinit var chatScroll: ScrollView
     private lateinit var messagesContainer: LinearLayout
     private lateinit var statusText: TextView
@@ -42,6 +50,7 @@ class NoteChatActivity : AppCompatActivity() {
     private lateinit var sendButton: Button
 
     private var busy = false
+    private var selectedModelId = ChatModelCatalog.FLASH
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +58,8 @@ class NoteChatActivity : AppCompatActivity() {
 
         noteStore = NoteStore(this)
         chatStore = ChatStore(this)
+        aiPreferences = AiPreferences(this)
+        selectedModelId = aiPreferences.getChatModelId()
         client = AiChatClientFactory.create()
 
         val noteId = intent.getStringExtra(EXTRA_NOTE_ID)
@@ -66,6 +77,7 @@ class NoteChatActivity : AppCompatActivity() {
         organizeButton.setOnClickListener { confirmOrganize() }
 
         chatContextText.text = "${note.courseName} · ${note.title}"
+        setupModelSelector()
         renderMessages()
     }
 
@@ -73,6 +85,8 @@ class NoteChatActivity : AppCompatActivity() {
         backButton = findViewById(R.id.chatBackButton)
         organizeButton = findViewById(R.id.organizeChatButton)
         chatContextText = findViewById(R.id.chatContextText)
+        modelSpinner = findViewById(R.id.chatModelSpinner)
+        modelHintText = findViewById(R.id.chatModelHintText)
         chatScroll = findViewById(R.id.chatScroll)
         messagesContainer = findViewById(R.id.chatMessagesContainer)
         statusText = findViewById(R.id.chatStatusText)
@@ -80,6 +94,66 @@ class NoteChatActivity : AppCompatActivity() {
         retryButton = findViewById(R.id.retryChatButton)
         input = findViewById(R.id.chatInput)
         sendButton = findViewById(R.id.sendChatButton)
+    }
+
+    private fun setupModelSelector() {
+        val labels = listOf(
+            getString(R.string.model_fast_label),
+            getString(R.string.model_precise_label)
+        )
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            labels
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        modelSpinner.adapter = adapter
+        modelSpinner.setSelection(
+            if (selectedModelId == ChatModelCatalog.PRO) 1 else 0,
+            false
+        )
+        updateModelHint()
+
+        modelSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedModelId = if (position == 1) {
+                    ChatModelCatalog.PRO
+                } else {
+                    ChatModelCatalog.FLASH
+                }
+                aiPreferences.setChatModelId(selectedModelId)
+                updateModelHint()
+                if (!busy) {
+                    statusText.text = getString(R.string.model_switched, modelName())
+                    statusText.visibility = View.VISIBLE
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+        }
+    }
+
+    private fun modelName(): String {
+        return if (selectedModelId == ChatModelCatalog.PRO) {
+            getString(R.string.model_precise_label)
+        } else {
+            getString(R.string.model_fast_label)
+        }
+    }
+
+    private fun updateModelHint() {
+        modelHintText.text = getString(
+            if (selectedModelId == ChatModelCatalog.PRO) {
+                R.string.model_hint_precise
+            } else {
+                R.string.model_hint_fast
+            }
+        )
     }
 
     private fun sendMessage() {
@@ -111,7 +185,7 @@ class NoteChatActivity : AppCompatActivity() {
         setBusy(true, getString(R.string.chat_thinking))
         retryButton.visibility = View.GONE
 
-        client.reply(note, history) { result ->
+        client.reply(note, history, selectedModelId) { result ->
             result.fold(
                 onSuccess = { reply ->
                     chatStore.append(
@@ -196,6 +270,7 @@ class NoteChatActivity : AppCompatActivity() {
         input.isEnabled = !value
         sendButton.isEnabled = !value
         retryButton.isEnabled = !value
+        modelSpinner.isEnabled = !value
         organizeButton.isEnabled = !value && chatStore.load(note.id).any {
             it.role == ChatMessage.ROLE_ASSISTANT
         }
@@ -226,7 +301,7 @@ class NoteChatActivity : AppCompatActivity() {
 
     private fun summarizeConversation(history: List<ChatMessage>) {
         setBusy(true, getString(R.string.chat_summarizing))
-        client.summarize(note, history) { result ->
+        client.summarize(note, history, selectedModelId) { result ->
             result.fold(
                 onSuccess = ::createChatNote,
                 onFailure = { error ->

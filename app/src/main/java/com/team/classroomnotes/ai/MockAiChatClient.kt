@@ -13,6 +13,7 @@ class MockAiChatClient : AiChatClient {
     override fun reply(
         note: NoteItem,
         history: List<ChatMessage>,
+        modelId: String,
         callback: (Result<ChatReply>) -> Unit
     ) {
         val question = history.lastOrNull { it.role == ChatMessage.ROLE_USER }?.content.orEmpty()
@@ -28,7 +29,7 @@ class MockAiChatClient : AiChatClient {
                     ChatReply(
                         content = "这是围绕《${note.title}》的模拟回答。你的问题是：$question\n\n当前未配置 API Key，因此暂不调用真实模型。下一步可以追问知识点、例题或让 AI 设计一道复习题。",
                         providerName = "Mock",
-                        modelName = "mock-chat",
+                        modelName = "mock-$modelId",
                         latencyMs = 600
                     )
                 )
@@ -39,6 +40,7 @@ class MockAiChatClient : AiChatClient {
     override fun summarize(
         note: NoteItem,
         history: List<ChatMessage>,
+        modelId: String,
         callback: (Result<GeneratedNote>) -> Unit
     ) {
         val asked = history
@@ -59,7 +61,7 @@ class MockAiChatClient : AiChatClient {
                         uncertain = listOf("模拟总结仅用于验证对话归档流程"),
                         isMock = true,
                         providerName = "Mock",
-                        modelName = "mock-chat-summary",
+                        modelName = "mock-$modelId-summary",
                         latencyMs = 700
                     )
                 )

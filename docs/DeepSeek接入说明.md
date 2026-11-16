@@ -52,7 +52,7 @@ AI_API_KEY=你的 DeepSeek API Key
 
 ```properties
 AI_ENDPOINT=https://api.deepseek.com/chat/completions
-AI_MODEL=deepseek-flash
+AI_IMAGE_MODEL=deepseek-flash
 ```
 
 `local.properties` 已写入 `.gitignore`，不会进入 Git。

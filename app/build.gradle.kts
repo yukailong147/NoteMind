@@ -27,8 +27,8 @@ android {
         applicationId = "com.team.classroomnotes"
         minSdk = 24
         targetSdk = 37
-        versionCode = 7
-        versionName = "0.7.0"
+        versionCode = 8
+        versionName = "0.8.0"
 
         buildConfigField(
             "String",
@@ -37,8 +37,8 @@ android {
         )
         buildConfigField(
             "String",
-            "AI_MODEL",
-            "\"${configValue("AI_MODEL", "deepseek-flash")}\""
+            "AI_IMAGE_MODEL",
+            "\"${configValue("AI_IMAGE_MODEL", "deepseek-flash")}\""
         )
         buildConfigField("String", "AI_API_KEY", "\"${configValue("AI_API_KEY")}\"")
     }

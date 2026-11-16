@@ -14,12 +14,14 @@ interface AiChatClient {
     fun reply(
         note: NoteItem,
         history: List<ChatMessage>,
+        modelId: String,
         callback: (Result<ChatReply>) -> Unit
     )
 
     fun summarize(
         note: NoteItem,
         history: List<ChatMessage>,
+        modelId: String,
         callback: (Result<GeneratedNote>) -> Unit
     )
 }

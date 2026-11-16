@@ -78,6 +78,12 @@
     <string name="chat_note_saved">对话已整理为新笔记</string>
     <string name="chat_summary_failed">对话整理失败，请重试</string>
     <string name="chat_source_note">来源笔记：%1$s</string>
+    <string name="model_label">回答模型</string>
+    <string name="model_fast_label">快速回答 · DeepSeek Flash</string>
+    <string name="model_precise_label">精细分析 · DeepSeek V4 Pro</string>
+    <string name="model_hint_fast">速度较快、成本较低。板书图片也固定使用 Flash。</string>
+    <string name="model_hint_precise">适合复杂推导和长回答，速度较慢且价格更高；该模型不支持图片。</string>
+    <string name="model_switched">已切换：%1$s</string>
     <string name="book_binding_info">%1$s · %2$s%3$s</string>
     <string name="page_suffix"> · 第 %1$s 页</string>
     <string name="find_related_notes">查找相关旧笔记</string>

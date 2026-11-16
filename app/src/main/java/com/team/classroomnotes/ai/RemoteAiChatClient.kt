@@ -18,6 +18,7 @@ class RemoteAiChatClient : AiChatClient {
     override fun reply(
         note: NoteItem,
         history: List<ChatMessage>,
+        modelId: String,
         callback: (Result<ChatReply>) -> Unit
     ) {
         executor.execute {
@@ -29,12 +30,13 @@ class RemoteAiChatClient : AiChatClient {
                 val content = requestCompletion(
                     systemPrompt = systemPrompt,
                     history = history,
+                    modelId = modelId,
                     jsonOutput = false
                 )
                 ChatReply(
                     content = content,
                     providerName = providerName(),
-                    modelName = BuildConfig.AI_MODEL,
+                    modelName = modelId,
                     latencyMs = System.currentTimeMillis() - startedAt
                 )
             }
@@ -45,6 +47,7 @@ class RemoteAiChatClient : AiChatClient {
     override fun summarize(
         note: NoteItem,
         history: List<ChatMessage>,
+        modelId: String,
         callback: (Result<GeneratedNote>) -> Unit
     ) {
         executor.execute {
@@ -78,12 +81,13 @@ class RemoteAiChatClient : AiChatClient {
                             createdAt = System.currentTimeMillis()
                         )
                     ),
+                    modelId = modelId,
                     jsonOutput = true
                 )
                 parseGeneratedNote(content).copy(
                     isMock = false,
                     providerName = providerName(),
-                    modelName = BuildConfig.AI_MODEL,
+                    modelName = modelId,
                     latencyMs = System.currentTimeMillis() - startedAt
                 )
             }
@@ -94,6 +98,7 @@ class RemoteAiChatClient : AiChatClient {
     private fun requestCompletion(
         systemPrompt: String,
         history: List<ChatMessage>,
+        modelId: String,
         jsonOutput: Boolean
     ): String {
         val messages = JSONArray()
@@ -107,7 +112,7 @@ class RemoteAiChatClient : AiChatClient {
         }
 
         val payload = JSONObject()
-            .put("model", BuildConfig.AI_MODEL)
+            .put("model", modelId)
             .put("messages", messages)
             .put("temperature", 0.3)
             .put("max_tokens", 1400)

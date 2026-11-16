@@ -57,7 +57,7 @@
 
 ```properties
 AI_ENDPOINT=https://你的服务地址/v1/chat/completions
-AI_MODEL=支持图片输入的模型名称
+AI_IMAGE_MODEL=支持图片输入的模型名称
 AI_API_KEY=你的开发密钥
 ```
 
