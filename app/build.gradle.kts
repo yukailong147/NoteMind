@@ -27,8 +27,8 @@ android {
         applicationId = "com.team.classroomnotes"
         minSdk = 24
         targetSdk = 37
-        versionCode = 8
-        versionName = "0.8.0"
+        versionCode = 9
+        versionName = "0.9.0"
 
         buildConfigField(
             "String",
@@ -68,5 +68,6 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.13.0")
     implementation("androidx.customview:customview:1.1.0")
     implementation("androidx.drawerlayout:drawerlayout:1.1.1")
+    testImplementation("junit:junit:4.13.2")
 }
 

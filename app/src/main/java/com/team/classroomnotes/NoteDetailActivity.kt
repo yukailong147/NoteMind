@@ -19,6 +19,7 @@ import com.team.classroomnotes.ai.GeneratedNote
 import com.team.classroomnotes.data.NoteItem
 import com.team.classroomnotes.data.NoteStatus
 import com.team.classroomnotes.data.NoteStore
+import com.team.classroomnotes.data.RelatedNoteFinder
 import com.team.classroomnotes.ui.bindStatus
 import java.io.File
 import java.text.SimpleDateFormat
@@ -178,6 +179,14 @@ class NoteDetailActivity : AppCompatActivity() {
                 current.questions.isNotEmpty()
         chatButton.visibility = if (hasResult) View.VISIBLE else View.GONE
         relatedNotesButton.visibility = if (hasResult) View.VISIBLE else View.GONE
+        if (hasResult) {
+            val relatedCount = RelatedNoteFinder.find(current, store.loadAll()).size
+            relatedNotesButton.text = if (relatedCount > 0) {
+                getString(R.string.find_related_notes_with_count, relatedCount)
+            } else {
+                getString(R.string.find_related_notes)
+            }
+        }
         summaryTitle.visibility = if (hasResult) View.VISIBLE else View.GONE
         summaryText.visibility = if (hasResult) View.VISIBLE else View.GONE
         summaryText.text = current.summary

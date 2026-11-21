@@ -2,6 +2,7 @@ package com.team.classroomnotes
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -41,6 +42,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sampleButton: Button
     private lateinit var statusText: TextView
     private lateinit var noteCountText: TextView
+    private lateinit var searchNotesButton: Button
     private lateinit var emptyStateText: TextView
     private lateinit var notesContainer: LinearLayout
     private lateinit var undoBar: LinearLayout
@@ -87,6 +89,7 @@ class MainActivity : AppCompatActivity() {
         sampleButton = findViewById(R.id.sampleButton)
         statusText = findViewById(R.id.statusText)
         noteCountText = findViewById(R.id.noteCountText)
+        searchNotesButton = findViewById(R.id.searchNotesButton)
         emptyStateText = findViewById(R.id.emptyStateText)
         notesContainer = findViewById(R.id.notesContainer)
         undoBar = findViewById(R.id.undoBar)
@@ -101,6 +104,9 @@ class MainActivity : AppCompatActivity() {
             )
         }
         sampleButton.setOnClickListener { createSampleCapture() }
+        searchNotesButton.setOnClickListener {
+            startActivity(Intent(this, NoteSearchActivity::class.java))
+        }
         undoButton.setOnClickListener { undoDelete() }
 
         renderNotes()
