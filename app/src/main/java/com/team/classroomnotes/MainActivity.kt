@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statusText: TextView
     private lateinit var noteCountText: TextView
     private lateinit var searchNotesButton: Button
+    private lateinit var reviewButton: Button
     private lateinit var emptyStateText: TextView
     private lateinit var notesContainer: LinearLayout
     private lateinit var undoBar: LinearLayout
@@ -90,6 +91,7 @@ class MainActivity : AppCompatActivity() {
         statusText = findViewById(R.id.statusText)
         noteCountText = findViewById(R.id.noteCountText)
         searchNotesButton = findViewById(R.id.searchNotesButton)
+        reviewButton = findViewById(R.id.reviewButton)
         emptyStateText = findViewById(R.id.emptyStateText)
         notesContainer = findViewById(R.id.notesContainer)
         undoBar = findViewById(R.id.undoBar)
@@ -106,6 +108,9 @@ class MainActivity : AppCompatActivity() {
         sampleButton.setOnClickListener { createSampleCapture() }
         searchNotesButton.setOnClickListener {
             startActivity(Intent(this, NoteSearchActivity::class.java))
+        }
+        reviewButton.setOnClickListener {
+            startActivity(Intent(this, ReviewActivity::class.java))
         }
         undoButton.setOnClickListener { undoDelete() }
 
