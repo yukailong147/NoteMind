@@ -90,5 +90,6 @@ docs/多模型选择说明.md
 docs/课本章节与相关笔记说明.md
 docs/全局搜索与相关提示说明.md
 docs/主动复习队列说明.md
+docs/GitHub协作与上传说明.md
 ```
 
