@@ -1,4 +1,8 @@
-# ClassroomNotes
+# NoteMind
+
+AI-powered learning and knowledge management platform for university students.
+
+## 当前实现：课堂智能笔记助手 ClassroomNotes
 
 当前版本的 Android 实现：
 
